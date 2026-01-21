@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - Записи к врачу</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 16px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .tab:hover:not(.active) {
+            background: #e2e8f0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .filter-group label {
+            font-size: 12px;
+            color: #718096;
+            font-weight: 600;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            align-self: flex-end;
+        }
+        
+        .refresh-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .appointments-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .appointments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .appointments-header h2 {
+            font-size: 24px;
+            color: #2d3748;
+        }
+        
+        .export-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .export-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .appointments-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+        }
+        
+        .appointments-table thead {
+            background: #f7fafc;
+        }
+        
+        .appointments-table th {
+            padding: 16px;
+            text-align: left;
+            font-size: 12px;
+            color: #718096;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .appointments-table td {
+            padding: 16px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #2d3748;
+        }
+        
+        .appointments-table tbody tr {
+            transition: background 0.2s;
+        }
+        
+        .appointments-table tbody tr:hover {
+            background: #f7fafc;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-confirmed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-completed {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        
+        .specialty-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .confirm-btn {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .confirm-btn:hover {
+            background: #a7f3d0;
+        }
+        
+        .cancel-btn {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .cancel-btn:hover {
+            background: #fecaca;
+        }
+        
+        .complete-btn {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        
+        .complete-btn:hover {
+            background: #c7d2fe;
+        }
+        
+        .delete-btn {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        
+        .delete-btn:hover {
+            background: #e2e8f0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+            font-size: 18px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state svg {
+            margin: 0 auto 20px;
+            color: #cbd5e0;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state p {
+            color: #718096;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* МОБИЛЬНАЯ АДАПТАЦИЯ */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .tabs {
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 16px 12px;
+            }
+            
+            .stat-card .value {
+                font-size: 24px;
+            }
+            
+            .filters {
+                padding: 15px;
+            }
+            
+            .appointments-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .appointments-header h2 {
+                font-size: 18px;
+            }
+            
+            /* Скрываем таблицу на мобильных */
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table thead {
+                display: none;
+            }
+            
+            table tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 2px solid #e2e8f0;
+                border-radius: 10px;
+                background: white;
+            }
+            
+            table td {
+                display: block;
+                text-align: left !important;
+                padding: 10px 15px;
+                border: none;
+            }
+            
+            table td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #718096;
+                display: block;
+                margin-bottom: 5px;
+                font-size: 12px;
+            }
+            
+            .action-btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            /* Скрываем таблицу на мобильных */
+            table {
+                display: none;
+            }
+            
+            /* Показываем карточки */
+            .mobile-appointments {
+                display: block !important;
+            }
+            
+            .appointment-mobile-card {
+                background: white;
+                border: 2px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+            
+            .appointment-mobile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: start;
+                margin-bottom: 12px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .appointment-mobile-row {
+                margin-bottom: 10px;
+            }
+            
+            .appointment-mobile-label {
+                font-size: 11px;
+                color: #718096;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+            
+            .appointment-mobile-value {
+                font-size: 14px;
+                color: #2d3748;
+                font-weight: 500;
+                word-break: break-word;
+            }
+            
+            .appointment-mobile-actions {
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid #e2e8f0;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .appointment-mobile-actions select {
+                width: 100%;
+                padding: 10px;
+                border-radius: 8px;
+                border: 2px solid #e2e8f0;
+                font-size: 14px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filters {
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+        
+        /* Скрываем мобильные карточки на десктопе */
+        .mobile-appointments {
+            display: none;
+        }
+        
+        /* СТИЛИ ДЛЯ ПОДДЕРЖКИ */
+        .support-ticket {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .support-ticket:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        
+        .ticket-header h3 {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+        
+        .ticket-user {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .ticket-message {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .ticket-reply {
+            padding: 16px;
+            background: #e6fffa;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 3px solid #48bb78;
+        }
+        
+        .ticket-reply-label {
+            font-size: 12px;
+            color: #22543d;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .ticket-reply-text {
+            font-size: 14px;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        
+        .ticket-date {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 8px;
+        }
+        
+        .reply-form {
+            margin-top: 12px;
+            display: none;
+        }
+        
+        .reply-form.show {
+            display: block;
+        }
+        
+        .reply-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .reply-form textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .reply-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .ticket-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .btn-reply {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-reply:hover {
+            background: #5568d3;
+        }
+        
+        .btn-close {
+            background: #718096;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-close:hover {
+            background: #4a5568;
+        }
+        
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-send {
+            background: #48bb78;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-send:hover {
+            background: #38a169;
+        }
+        
+        /* СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ЧАТА */
+        .chat-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .chat-modal.show {
+            display: flex;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .chat-header {
+            padding: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .chat-header h3 {
+            font-size: 20px;
+            color: white;
+            margin: 0;
+        }
+        
+        .chat-user-info {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            margin-top: 4px;
+        }
+        
+        .chat-close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f7fafc;
+        }
+        
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            max-width: 75%;
+        }
+        
+        .chat-message.user {
+            margin-right: auto;
+        }
+        
+        .chat-message.admin {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+        
+        .chat-message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .chat-message.user .chat-message-avatar {
+            background: #e0e7ff;
+        }
+        
+        .chat-message.admin .chat-message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .chat-message-content {
+            flex: 1;
+        }
+        
+        .chat-message-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #718096;
+            margin-bottom: 4px;
+        }
+        
+        .chat-message-bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .chat-message.user .chat-message-bubble {
+            background: white;
+            color: #2d3748;
+            border-bottom-left-radius: 4px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .chat-message.admin .chat-message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .chat-message-time {
+            font-size: 11px;
+            color: #a0aec0;
+            margin-top: 4px;
+        }
+        
+        .chat-input-area {
+            padding: 16px;
+            border-top: 2px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+            background: white;
+            border-radius: 0 0 16px 16px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .chat-send-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .chat-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Улучшенные карточки тикетов */
+        .ticket-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .ticket-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header fade-in">
+            <h1>🏥 Админ-панель</h1>
+            <p>Управление записями к врачу</p>
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('appointments')">📋 Записи</button>
+                <button class="tab" onclick="showTab('doctors')">👨‍⚕️ Врачи</button>
+                <button class="tab" onclick="showTab('support')">💬 Поддержка</button>
+            </div>
+        </div>
+        
+        <div id="appointmentsTab">
+        <div class="stats-grid" id="statsGrid">
+            <!-- Статистика будет загружена динамически -->
+        </div>
+        
+        <div class="filters fade-in">
+            <div class="filter-group">
+                <label>Статус</label>
+                <select id="filterStatus">
+                    <option value="">Все</option>
+                    <option value="pending">Ожидает</option>
+                    <option value="confirmed">Подтверждена</option>
+                    <option value="cancelled">Отменена</option>
+                    <option value="completed">Завершена</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Специальность</label>
+                <select id="filterSpecialty">
+                    <option value="">Все</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Поиск</label>
+                <input type="text" id="searchInput" placeholder="Имя, телефон...">
+            </div>
+            
+            <button class="refresh-btn" onclick="loadAppointments()">
+                🔄 Обновить
+            </button>
+        </div>
+        
+        <div class="appointments-container fade-in">
+            <div class="appointments-header">
+                <h2>Все записи</h2>
+                <button class="export-btn" onclick="exportToCSV()">
+                    📊 Экспорт в CSV
+                </button>
+            </div>
+            
+            <div id="appointmentsContent">
+                <div class="loading">Загрузка записей...</div>
+            </div>
+        </div>
+        </div>
+        
+        <!-- Секция управления врачами -->
+        <div id="doctorsTab" style="display: none;">
+            <div class="appointments-container fade-in">
+                <div class="appointments-header">
+                    <h2>Управление врачами</h2>
+                    <button class="refresh-btn" onclick="loadDoctors()">
+                        🔄 Обновить
+                    </button>
+                </div>
+                
+                <div id="doctorsContent">
+                    <div class="loading">Загрузка врачей...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ВкладКА ПОДДЕРЖКА -->
+        <div id="supportTab" style="display: none;">
+            <div class="appointments-container fade-in">
+                <div class="appointments-header">
+                    <h2>Обращения в поддержку</h2>
+                    <div style="display: flex; gap: 12px;">
+                        <select id="supportFilter" onchange="filterSupport()" style="padding: 10px 16px; border-radius: 8px; border: 2px solid #e2e8f0; font-size: 14px; font-weight: 600;">
+                            <option value="all">Все обращения</option>
+                            <option value="new">Новые</option>
+                            <option value="answered">Отвечено</option>
+                            <option value="closed">Закрыто</option>
+                        </select>
+                        <button class="refresh-btn" onclick="loadSupportTickets()">
+                            🔄 Обновить
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="supportContent">
+                    <div class="loading">Загрузка обращений...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- МОДАЛЬНОЕ ОКНО ЧАТА ДЛЯ АДМИНА -->
+    <div id="chatModal" class="chat-modal">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div>
+                    <h3 id="chatTitle">Обращение</h3>
+                    <div class="chat-user-info" id="chatUserInfo"></div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="chat-close-btn" onclick="closeTicketFromChat()" style="background: rgba(220, 38, 38, 0.2); color: white;" id="closeTicketBtn">
+                        🗑️ Закрыть обращение
+                    </button>
+                    <button class="chat-close-btn" onclick="closeChatModal()">✕ Закрыть чат</button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <!-- Сообщения будут здесь -->
+            </div>
+            
+            <div class="chat-input-area">
+                <textarea 
+                    id="chatInput" 
+                    class="chat-input" 
+                    placeholder="Напишите ответ пользователю..."
+                    rows="1"
+                ></textarea>
+                <button class="chat-send-btn" onclick="sendChatMessage()" id="chatSendBtn">
+                    📤 Отправить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Определяем API URL
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3001/api'
+            : '/api';
+        let allAppointments = [];
+        let filteredAppointments = [];
+        let allDoctors = {};
+        
+        const specialtyColors = {
+            'Кардиология': '#ff6b9d',
+            'Неврология': '#4ecdc4',
+            'Терапия': '#95e1d3',
+            'Педиатрия': '#ffd93d'
+        };
+        
+        const specialtyNames = {
+            'cardiology': 'Кардиология',
+            'neurology': 'Неврология',
+            'therapy': 'Терапия',
+            'pediatrics': 'Педиатрия'
+        };
+        
+        // Переключение вкладок
+        function showTab(tabName) {
+            // Скрыть все вкладки
+            document.getElementById('appointmentsTab').style.display = 'none';
+            document.getElementById('doctorsTab').style.display = 'none';
+            document.getElementById('supportTab').style.display = 'none';
+            
+            // Убрать активный класс у всех кнопок
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            // Показать нужную вкладку
+            if (tabName === 'appointments') {
+                document.getElementById('appointmentsTab').style.display = 'block';
+                document.querySelectorAll('.tab')[0].classList.add('active');
+            } else if (tabName === 'doctors') {
+                document.getElementById('doctorsTab').style.display = 'block';
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                loadDoctors();
+            } else if (tabName === 'support') {
+                document.getElementById('supportTab').style.display = 'block';
+                document.querySelectorAll('.tab')[2].classList.add('active');
+                loadSupportTickets();
+            }
+        }
+        
+        // Загрузка статистики
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/stats`);
+                const stats = await response.json();
+                
+                const statsHTML = `
+                    <div class="stat-card fade-in">
+                        <h3>Всего записей</h3>
+                        <div class="value">${stats.total}</div>
+                    </div>
+                    <div class="stat-card fade-in">
+                        <h3>Ожидают</h3>
+                        <div class="value" style="color: #92400e;">${stats.pending}</div>
+                    </div>
+                    <div class="stat-card fade-in">
+                        <h3>Подтверждены</h3>
+                        <div class="value" style="color: #065f46;">${stats.confirmed}</div>
+                    </div>
+                    <div class="stat-card fade-in">
+                        <h3>Отменены</h3>
+                        <div class="value" style="color: #991b1b;">${stats.cancelled}</div>
+                    </div>
+                    <div class="stat-card fade-in">
+                        <h3>Завершены</h3>
+                        <div class="value" style="color: #3730a3;">${stats.completed}</div>
+                    </div>
+                `;
+                
+                document.getElementById('statsGrid').innerHTML = statsHTML;
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+        
+        // Загрузка записей
+        async function loadAppointments() {
+            try {
+                const response = await fetch(`${API_URL}/appointments`);
+                allAppointments = await response.json();
+                
+                // Заполнение фильтра специальностей
+                const specialties = [...new Set(allAppointments.map(apt => apt.specialtyName))];
+                const filterSpecialty = document.getElementById('filterSpecialty');
+                filterSpecialty.innerHTML = '<option value="">Все</option>';
+                specialties.forEach(spec => {
+                    const option = document.createElement('option');
+                    option.value = spec;
+                    option.textContent = spec;
+                    filterSpecialty.appendChild(option);
+                });
+                
+                applyFilters();
+                loadStats();
+            } catch (error) {
+                console.error('Ошибка загрузки записей:', error);
+                document.getElementById('appointmentsContent').innerHTML = `
+                    <div class="empty-state">
+                        <h3>Ошибка подключения</h3>
+                        <p>Не удалось загрузить записи. Убедитесь, что сервер запущен.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Применение фильтров
+        function applyFilters() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const specialtyFilter = document.getElementById('filterSpecialty').value;
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredAppointments = allAppointments.filter(apt => {
+                const matchStatus = !statusFilter || apt.status === statusFilter;
+                const matchSpecialty = !specialtyFilter || apt.specialtyName === specialtyFilter;
+                const matchSearch = !searchText || 
+                    apt.name.toLowerCase().includes(searchText) ||
+                    apt.phone.includes(searchText) ||
+                    apt.doctor.toLowerCase().includes(searchText);
+                
+                return matchStatus && matchSpecialty && matchSearch;
+            });
+            
+            renderAppointments();
+        }
+        
+        // Отображение записей
+        function renderAppointments() {
+            const content = document.getElementById('appointmentsContent');
+            
+            if (filteredAppointments.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <h3>Записей не найдено</h3>
+                        <p>Попробуйте изменить фильтры</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Сортировка по дате
+            const sorted = [...filteredAppointments].sort((a, b) => 
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+            
+            const tableHTML = `
+                <table class="appointments-table">
+                    <thead>
+                        <tr>
+                            <th>Дата записи</th>
+                            <th>Пациент</th>
+                            <th>Телефон</th>
+                            <th>Специальность</th>
+                            <th>Врач</th>
+                            <th>Дата приема</th>
+                            <th>Время</th>
+                            <th>Заметка</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sorted.map(apt => `
+                            <tr>
+                                <td data-label="Дата записи">${new Date(apt.createdAt).toLocaleString('ru-RU')}</td>
+                                <td data-label="Пациент"><strong>${apt.name}</strong></td>
+                                <td data-label="Телефон">${apt.phone}</td>
+                                <td data-label="Специальность">
+                                    <span class="specialty-badge" style="background: ${specialtyColors[apt.specialtyName]}20; color: ${specialtyColors[apt.specialtyName]};">
+                                        ${apt.specialtyName}
+                                    </span>
+                                </td>
+                                <td data-label="Врач">${apt.doctor}</td>
+                                <td data-label="Дата приема">${new Date(apt.date).toLocaleDateString('ru-RU')}</td>
+                                <td data-label="Время"><strong>${apt.time}</strong></td>
+                                <td data-label="Заметка" style="max-width: 200px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">
+                                    ${apt.notes ? `<span style="font-size: 13px; color: #4a5568;">${apt.notes}</span>` : '<span style="color: #a0aec0; font-style: italic;">—</span>'}
+                                </td>
+                                <td data-label="Статус">
+                                    <span class="status-badge status-${apt.status}">
+                                        ${getStatusLabel(apt.status)}
+                                    </span>
+                                </td>
+                                <td data-label="Действия"  >
+                                    <div class="action-buttons">
+                                        ${apt.status === 'pending' ? `
+                                            <button class="action-btn confirm-btn" onclick="updateStatus('${apt.id}', 'confirmed')">
+                                                ✓ Подтвердить
+                                            </button>
+                                        ` : ''}
+                                        ${apt.status === 'confirmed' ? `
+                                            <button class="action-btn complete-btn" onclick="updateStatus('${apt.id}', 'completed')">
+                                                ✓ Завершить
+                                            </button>
+                                        ` : ''}
+                                        ${apt.status === 'pending' || apt.status === 'confirmed' ? `
+                                            <button class="action-btn cancel-btn" onclick="updateStatus('${apt.id}', 'cancelled')">
+                                                ✕ Отменить
+                                            </button>
+                                        ` : ''}
+                                        <button class="action-btn delete-btn" onclick="deleteAppointment('${apt.id}')">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <!-- Мобильные карточки -->
+                <div class="mobile-appointments">
+                    ${sorted.map(apt => `
+                        <div class="appointment-mobile-card">
+                            <div class="appointment-mobile-header">
+                                <div>
+                                    <div class="appointment-mobile-label">Пациент</div>
+                                    <div class="appointment-mobile-value" style="font-size: 16px; font-weight: 700;">${apt.name}</div>
+                                </div>
+                                <span class="status-badge status-${apt.status}" style="font-size: 11px;">
+                                    ${getStatusLabel(apt.status)}
+                                </span>
+                            </div>
+                            
+                            <div class="appointment-mobile-row">
+                                <div class="appointment-mobile-label">Телефон</div>
+                                <div class="appointment-mobile-value">${apt.phone}</div>
+                            </div>
+                            
+                            <div class="appointment-mobile-row">
+                                <div class="appointment-mobile-label">Специальность</div>
+                                <div class="appointment-mobile-value">
+                                    <span class="specialty-badge" style="background: ${specialtyColors[apt.specialtyName]}20; color: ${specialtyColors[apt.specialtyName]}; padding: 4px 10px; border-radius: 12px; font-size: 12px;">
+                                        ${apt.specialtyName}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="appointment-mobile-row">
+                                <div class="appointment-mobile-label">Врач</div>
+                                <div class="appointment-mobile-value">${apt.doctor}</div>
+                            </div>
+                            
+                            <div class="appointment-mobile-row">
+                                <div class="appointment-mobile-label">Дата и время приема</div>
+                                <div class="appointment-mobile-value">${new Date(apt.date).toLocaleDateString('ru-RU')} в ${apt.time}</div>
+                            </div>
+                            
+                            ${apt.notes ? `
+                                <div class="appointment-mobile-row">
+                                    <div class="appointment-mobile-label">Заметки</div>
+                                    <div class="appointment-mobile-value">${apt.notes}</div>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="appointment-mobile-actions">
+                                ${apt.status === 'pending' ? `
+                                    <button class="action-btn confirm-btn" onclick="updateStatus('${apt.id}', 'confirmed')" style="width: 100%; padding: 12px;">
+                                        ✓ Подтвердить
+                                    </button>
+                                ` : ''}
+                                ${apt.status === 'confirmed' ? `
+                                    <button class="action-btn complete-btn" onclick="updateStatus('${apt.id}', 'completed')" style="width: 100%; padding: 12px;">
+                                        ✓ Завершить
+                                    </button>
+                                ` : ''}
+                                ${apt.status === 'pending' || apt.status === 'confirmed' ? `
+                                    <button class="action-btn cancel-btn" onclick="updateStatus('${apt.id}', 'cancelled')" style="width: 100%; padding: 12px;">
+                                        ✕ Отменить
+                                    </button>
+                                ` : ''}
+                                <button class="action-btn delete-btn" onclick="deleteAppointment('${apt.id}')" style="width: 100%; padding: 12px;">
+                                    🗑️ Удалить
+                                </button>
+                            </div>
+                            
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                                <div class="appointment-mobile-label">Дата создания</div>
+                                <div class="appointment-mobile-value" style="font-size: 12px;">${new Date(apt.createdAt).toLocaleString('ru-RU')}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            content.innerHTML = tableHTML;
+        }
+        
+        function getStatusLabel(status) {
+            const labels = {
+                pending: 'Ожидает',
+                confirmed: 'Подтверждена',
+                cancelled: 'Отменена',
+                completed: 'Завершена'
+            };
+            return labels[status] || status;
+        }
+        
+        // Обновление статуса
+        async function updateStatus(id, newStatus) {
+            try {
+                const response = await fetch(`${API_URL}/appointments/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                if (response.ok) {
+                    await loadAppointments();
+                    alert('Статус обновлен!');
+                }
+            } catch (error) {
+                console.error('Ошибка обновления статуса:', error);
+                alert('Ошибка при обновлении статуса');
+            }
+        }
+        
+        // Удаление записи
+        async function deleteAppointment(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту запись?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/appointments/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    await loadAppointments();
+                    alert('Запись удалена!');
+                }
+            } catch (error) {
+                console.error('Ошибка удаления записи:', error);
+                alert('Ошибка при удалении записи');
+            }
+        }
+        
+        // Экспорт в CSV
+        function exportToCSV() {
+            const headers = ['Дата создания', 'Пациент', 'Телефон', 'Email', 'Специальность', 'Врач', 'Дата приема', 'Время', 'Статус', 'Заметки'];
+            
+            const rows = filteredAppointments.map(apt => [
+                new Date(apt.createdAt).toLocaleString('ru-RU'),
+                apt.name,
+                apt.phone,
+                apt.email || '',
+                apt.specialtyName,
+                apt.doctor,
+                new Date(apt.date).toLocaleDateString('ru-RU'),
+                apt.time,
+                getStatusLabel(apt.status),
+                apt.notes || ''
+            ]);
+            
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `appointments_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+        
+        // Обработчики фильтров
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        document.getElementById('filterSpecialty').addEventListener('change', applyFilters);
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        
+        // УПРАВЛЕНИЕ ВРАЧАМИ
+        
+        // Загрузка врачей
+        async function loadDoctors() {
+            try {
+                const response = await fetch(`${API_URL}/doctors`);
+                allDoctors = await response.json();
+                renderDoctors();
+            } catch (error) {
+                console.error('Ошибка загрузки врачей:', error);
+                document.getElementById('doctorsContent').innerHTML = `
+                    <div class="empty-state">
+                        <h3>Ошибка подключения</h3>
+                        <p>Не удалось загрузить список врачей</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Отображение врачей
+        function renderDoctors() {
+            const content = document.getElementById('doctorsContent');
+            
+            let html = '';
+            
+            for (const [specialty, doctors] of Object.entries(allDoctors)) {
+                const color = specialtyColors[specialtyNames[specialty]] || '#667eea';
+                
+                html += `
+                    <div style="margin-bottom: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="font-size: 20px; color: #2d3748; display: flex; align-items: center; gap: 8px;">
+                                <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: ${color};"></span>
+                                ${specialtyNames[specialty]}
+                            </h3>
+                            <button class="action-btn confirm-btn" onclick="showAddDoctorForm('${specialty}')">
+                                ➕ Добавить врача
+                            </button>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                            ${doctors.map(doctor => `
+                                <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <h4 style="font-size: 16px; font-weight: 600; color: #2d3748; flex: 1;">${doctor.name}</h4>
+                                        <div style="display: flex; gap: 4px;">
+                                            <button class="action-btn" style="background: #e0e7ff; color: #3730a3; padding: 6px 10px; font-size: 12px;" onclick="showEditDoctorForm('${specialty}', ${doctor.id}, '${doctor.name.replace(/'/g, "\\'")}')">
+                                                ✏️
+                                            </button>
+                                            <button class="action-btn delete-btn" style="padding: 6px 10px; font-size: 12px;" onclick="deleteDoctor('${specialty}', ${doctor.id}, '${doctor.name.replace(/'/g, "\\'")}')">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = html;
+        }
+        
+        // Показать форму добавления врача
+        function showAddDoctorForm(specialty) {
+            const name = prompt(`Добавить врача в ${specialtyNames[specialty]}\n\nВведите ФИО врача:`);
+            if (!name) return;
+            
+            addDoctor(specialty, name);
+        }
+        
+        // Добавить врача
+        async function addDoctor(specialty, name) {
+            try {
+                const response = await fetch(`${API_URL}/doctors/${specialty}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, experience: '' })
+                });
+                
+                if (response.ok) {
+                    await loadDoctors();
+                    alert('Врач успешно добавлен!');
+                } else {
+                    alert('Ошибка при добавлении врача');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось связаться с сервером');
+            }
+        }
+        
+        // Показать форму редактирования врача
+        function showEditDoctorForm(specialty, id, currentName) {
+            const name = prompt(`Редактировать врача\n\nФИО врача:`, currentName);
+            if (name === null) return;
+            
+            editDoctor(specialty, id, name);
+        }
+        
+        // Редактировать врача
+        async function editDoctor(specialty, id, name) {
+            try {
+                const response = await fetch(`${API_URL}/doctors/${specialty}/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, experience: '' })
+                });
+                
+                if (response.ok) {
+                    await loadDoctors();
+                    alert('Данные врача обновлены!');
+                } else {
+                    alert('Ошибка при обновлении данных');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось связаться с сервером');
+            }
+        }
+        
+        // Удалить врача
+        async function deleteDoctor(specialty, id, name) {
+            if (!confirm(`Вы уверены, что хотите удалить врача "${name}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/doctors/${specialty}/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    await loadDoctors();
+                    alert('Врач удален!');
+                } else {
+                    alert('Ошибка при удалении врача');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось связаться с сервером');
+            }
+        }
+        
+        // ============================================
+        // ФУНКЦИИ ДЛЯ ПОДДЕРЖКИ
+        // ============================================
+        
+        let allTickets = [];
+        
+        // Загрузка обращений
+        async function loadSupportTickets() {
+            try {
+                const response = await fetch(`${API_URL}/support`);
+                allTickets = await response.json();
+                
+                renderSupportTickets(allTickets);
+            } catch (error) {
+                console.error('Ошибка загрузки обращений:', error);
+                document.getElementById('supportContent').innerHTML = '<div class="loading">Ошибка загрузки</div>';
+            }
+        }
+        
+        // Отрисовка обращений
+        function renderSupportTickets(tickets) {
+            const contentEl = document.getElementById('supportContent');
+            
+            if (tickets.length === 0) {
+                contentEl.innerHTML = '<div class="loading">Нет обращений</div>';
+                return;
+            }
+            
+            const statusLabels = {
+                'new': 'Новое',
+                'answered': 'Отвечено',
+                'closed': 'Закрыто'
+            };
+            
+            const statusColors = {
+                'new': '#feebc8',
+                'answered': '#c6f6d5',
+                'closed': '#e2e8f0'
+            };
+            
+            contentEl.innerHTML = tickets.map(ticket => {
+                // Подсчёт сообщений
+                const messagesCount = ticket.messages ? ticket.messages.length : 1;
+                const lastMessage = ticket.messages && ticket.messages.length > 0 
+                    ? ticket.messages[ticket.messages.length - 1]
+                    : { text: ticket.message || '', sender: 'user' };
+                
+                return `
+                    <div class="support-ticket ticket-card" style="border-left-color: ${statusColors[ticket.status] || '#667eea'}; position: relative;">
+                        <div onclick="openChatModal('${ticket.id}')" style="cursor: pointer;">
+                            <div class="ticket-header">
+                                <div>
+                                    <h3>${ticket.subject}</h3>
+                                    <div class="ticket-user">
+                                        👤 ${ticket.userName} 
+                                        <span style="color: #a0aec0;">•</span> 
+                                        🆔 ${ticket.userId}
+                                    </div>
+                                </div>
+                                <div class="status-badge status-${ticket.status}">
+                                    ${statusLabels[ticket.status] || ticket.status}
+                                </div>
+                            </div>
+                            
+                            <div class="ticket-message">
+                                <strong>${lastMessage.sender === 'admin' ? '👨‍💼 Вы' : '👤 ' + ticket.userName}:</strong> 
+                                ${lastMessage.text.substring(0, 150)}${lastMessage.text.length > 150 ? '...' : ''}
+                            </div>
+                            
+                            <div class="ticket-date">
+                                💬 Сообщений: ${messagesCount} • 
+                                Последнее: ${new Date(ticket.lastMessageAt || ticket.createdAt).toLocaleString('ru-RU')}
+                            </div>
+                        </div>
+                        
+                        <button 
+                            onclick="event.stopPropagation(); deleteSupportTicket('${ticket.id}')" 
+                            style="position: absolute; top: 16px; right: 16px; background: #fee2e2; color: #991b1b; border: none; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#fecaca'" 
+                            onmouseout="this.style.background='#fee2e2'"
+                        >
+                            🗑️ Удалить
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Глобальная переменная для текущего тикета
+        let currentTicketId = null;
+        let currentTicket = null;
+        
+        // Открыть модальное окно чата
+        async function openChatModal(ticketId) {
+            currentTicketId = ticketId;
+            
+            try {
+                const response = await fetch(`${API_URL}/support`);
+                const tickets = await response.json();
+                const ticket = tickets.find(t => t.id === ticketId);
+                
+                if (!ticket) {
+                    alert('Обращение не найдено');
+                    return;
+                }
+                
+                currentTicket = ticket;
+                
+                document.getElementById('chatTitle').textContent = ticket.subject;
+                document.getElementById('chatUserInfo').textContent = `👤 ${ticket.userName} • 🆔 ${ticket.userId}`;
+                
+                // Показать/скрыть кнопку закрытия обращения
+                const closeTicketBtn = document.getElementById('closeTicketBtn');
+                if (ticket.status === 'closed') {
+                    closeTicketBtn.style.display = 'none';
+                } else {
+                    closeTicketBtn.style.display = 'block';
+                }
+                
+                // Отобразить сообщения
+                renderChatMessages(ticket.messages || [
+                    {
+                        text: ticket.message || '',
+                        sender: 'user',
+                        senderName: ticket.userName,
+                        createdAt: ticket.createdAt
+                    }
+                ]);
+                
+                // Показать модальное окно
+                document.getElementById('chatModal').classList.add('show');
+                
+                // Прокрутить вниз
+                setTimeout(() => {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
+                
+            } catch (error) {
+                console.error('Open chat error:', error);
+                alert('Ошибка открытия чата');
+            }
+        }
+        
+        // Отрисовать сообщения в чате
+        function renderChatMessages(messages) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            chatMessages.innerHTML = messages.map(msg => {
+                const isAdmin = msg.sender === 'admin';
+                const avatar = isAdmin ? '👨‍💼' : '👤';
+                const senderName = msg.senderName || (isAdmin ? 'Администратор' : 'Пользователь');
+                
+                return `
+                    <div class="chat-message ${msg.sender}">
+                        <div class="chat-message-avatar">${avatar}</div>
+                        <div class="chat-message-content">
+                            <div class="chat-message-name">${senderName}</div>
+                            <div class="chat-message-bubble" style="word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; max-width: 100%;">
+                                ${msg.text}
+                            </div>
+                            <div class="chat-message-time">
+                                ${new Date(msg.createdAt).toLocaleString('ru-RU')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Отправить сообщение в чат
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentTicketId) return;
+            
+            const sendBtn = document.getElementById('chatSendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Отправка...';
+            
+            try {
+                const response = await fetch(`${API_URL}/support/${currentTicketId}/message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message,
+                        sender: 'admin',
+                        senderName: 'Администратор'
+                    })
+                });
+                
+                if (response.ok) {
+                    const updatedTicket = await response.json();
+                    renderChatMessages(updatedTicket.messages);
+                    input.value = '';
+                    
+                    // Прокрутить вниз
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Обновить список обращений (тихо, без ошибок)
+                    loadSupportTickets().catch(err => console.log('Update list error:', err));
+                    
+                    showNotification('✅ Сообщение отправлено');
+                } else {
+                    console.error('Send message failed:', response.status);
+                    showNotification('❌ Ошибка отправки');
+                }
+            } catch (error) {
+                console.error('Send message error:', error);
+                showNotification('❌ Ошибка отправки');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📤 Отправить';
+            }
+        }
+        
+        // Закрыть модальное окно чата
+        function closeChatModal() {
+            document.getElementById('chatModal').classList.remove('show');
+            currentTicketId = null;
+            currentTicket = null;
+        }
+        
+        // Фильтрация обращений
+        function filterSupport() {
+            const filter = document.getElementById('supportFilter').value;
+            
+            if (filter === 'all') {
+                renderSupportTickets(allTickets);
+            } else {
+                const filtered = allTickets.filter(t => t.status === filter);
+                renderSupportTickets(filtered);
+            }
+        }
+        
+        // Закрыть обращение
+        async function closeTicket(ticketId) {
+            if (!confirm('Закрыть это обращение?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/support/${ticketId}/close`, {
+                    method: 'PATCH'
+                });
+                
+                if (response.ok) {
+                    showNotification('✅ Обращение закрыто');
+                    loadSupportTickets();
+                } else {
+                    console.error('Close ticket failed:', response.status);
+                    showNotification('❌ Ошибка закрытия');
+                }
+            } catch (error) {
+                console.error('Ошибка закрытия обращения:', error);
+                showNotification('❌ Ошибка закрытия');
+            }
+        }
+        
+        // Закрыть обращение из чата
+        async function closeTicketFromChat() {
+            if (!currentTicketId) return;
+            
+            if (!confirm('Закрыть это обращение? Оно будет помечено как решённое.')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/support/${currentTicketId}/close`, {
+                    method: 'PATCH'
+                });
+                
+                if (response.ok) {
+                    showNotification('✅ Обращение закрыто');
+                    closeChatModal();
+                    loadSupportTickets().catch(err => console.log('Update list error:', err));
+                } else {
+                    console.error('Close ticket failed:', response.status);
+                    showNotification('❌ Ошибка закрытия');
+                }
+            } catch (error) {
+                console.error('Close ticket error:', error);
+                showNotification('❌ Ошибка закрытия');
+            }
+        }
+        
+        // Удалить обращение
+        async function deleteSupportTicket(ticketId) {
+            if (!confirm('Удалить это обращение навсегда? Это действие нельзя отменить!')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/support/${ticketId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showNotification('✅ Обращение удалено');
+                    loadSupportTickets().catch(err => console.log('Update list error:', err));
+                } else {
+                    console.error('Delete ticket failed:', response.status);
+                    showNotification('❌ Ошибка удаления');
+                }
+            } catch (error) {
+                console.error('Delete ticket error:', error);
+                showNotification('❌ Ошибка удаления');
+            }
+        }
+        
+        // Enter для отправки сообщения (Shift+Enter для новой строки)
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChatMessage();
+                    }
+                });
+            }
+        });
+        
+        // Автообновление каждые 30 секунд
+        setInterval(loadAppointments, 30000);
+        
+        // Начальная загрузка
+        loadAppointments();
+    </script>
+</body>
+</html>
