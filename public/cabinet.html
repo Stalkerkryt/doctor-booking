@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
+    <title>Личный кабинет - Запись к врачу</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .header-left h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+            font-family: 'Playfair Display', serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header-left p {
+            font-size: 16px;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .header-right {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-white {
+            background: white;
+            color: #667eea;
+        }
+        
+        .btn-white:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,255,255,0.3);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-outline:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 12px rgba(255,255,255,0.3);
+        }
+        
+        .tab:hover:not(.active) {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .card h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .info-item {
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #718096;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .appointments-list {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .appointment-card {
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .appointment-info h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .appointment-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #718096;
+        }
+        
+        .appointment-details span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .status-pending {
+            background: #feebc8;
+            color: #c05621;
+        }
+        
+        .status-confirmed {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .status-cancelled {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .status-completed {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #2d3748;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .support-tickets {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .ticket-card {
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        
+        .ticket-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .ticket-message {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        .ticket-reply {
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 12px;
+            border-left: 3px solid #48bb78;
+        }
+        
+        .ticket-reply-label {
+            font-size: 12px;
+            color: #22543d;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .ticket-reply-text {
+            font-size: 14px;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        
+        .ticket-date {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 8px;
+        }
+        
+        .success-message {
+            padding: 16px;
+            background: #c6f6d5;
+            color: #22543d;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .header-left h1 {
+                font-size: 28px;
+            }
+            
+            .header-right {
+                width: 100%;
+            }
+            
+            .header-right .btn {
+                flex: 1;
+            }
+            
+            .appointment-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>🏥 Личный кабинет</h1>
+                <p id="welcomeText">Загрузка...</p>
+            </div>
+            <div class="header-right">
+                <a href="/auth.html" class="btn btn-outline" onclick="logout()">Выйти</a>
+                <a href="/" class="btn btn-white">Записаться к врачу</a>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('profile')">👤 Профиль</button>
+            <button class="tab" onclick="switchTab('appointments')">📋 Мои записи</button>
+            <button class="tab" onclick="switchTab('support')">💬 Поддержка</button>
+            <button class="tab" onclick="switchTab('settings')">⚙️ Настройки</button>
+        </div>
+        
+        <!-- ПРОФИЛЬ -->
+        <div id="profileTab" class="tab-content active">
+            <div class="card">
+                <h2>Мои данные</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Имя</div>
+                        <div class="info-value" id="profileName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Телефон</div>
+                        <div class="info-value" id="profilePhone">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ИНН</div>
+                        <div class="info-value" id="profileInn">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- МОИ ЗАПИСИ -->
+        <div id="appointmentsTab" class="tab-content">
+            <div class="card">
+                <h2>Мои записи к врачам</h2>
+                <div id="appointmentsList" class="appointments-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <h3>Загрузка записей...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ПОДДЕРЖКА -->
+        <div id="supportTab" class="tab-content">
+            <div class="card">
+                <h2>Создать обращение</h2>
+                <div id="supportSuccess" class="success-message"></div>
+                <form onsubmit="submitSupportTicket(event)">
+                    <div class="form-group">
+                        <label for="supportSubject">Тема обращения</label>
+                        <input type="text" id="supportSubject" placeholder="Например: Проблема с записью" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="supportMessage">Ваше сообщение</label>
+                        <textarea id="supportMessage" placeholder="Опишите вашу проблему или вопрос..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Отправить обращение</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2>Мои обращения</h2>
+                <div id="supportTicketsList" class="support-tickets">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>Загрузка обращений...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- НАСТРОЙКИ -->
+        <div id="settingsTab" class="tab-content">
+            <div class="card">
+                <h2>Изменить данные</h2>
+                <div id="settingsSuccess" class="success-message"></div>
+                <form onsubmit="updateProfile(event)">
+                    <div class="form-group">
+                        <label for="settingsName">Имя</label>
+                        <input type="text" id="settingsName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settingsPhone">Телефон</label>
+                        <input type="tel" id="settingsPhone" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Сохранить изменения</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2>Изменить пароль</h2>
+                <div id="passwordSuccess" class="success-message"></div>
+                <form onsubmit="changePassword(event)">
+                    <div class="form-group">
+                        <label for="newPassword">Новый пароль</label>
+                        <input type="password" id="newPassword" minlength="6" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Подтвердите пароль</label>
+                        <input type="password" id="confirmPassword" minlength="6" placeholder="••••••••" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Изменить пароль</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API URL
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3001/api'
+            : '/api';
+
+        let currentUser = null;
+
+        // Проверка авторизации
+        function checkAuth() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = '/auth.html';
+                return null;
+            }
+            return JSON.parse(userStr);
+        }
+
+        // Выход
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/auth.html';
+        }
+
+        // Переключение табов
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const tabMap = {
+                'profile': ['profileTab', 0],
+                'appointments': ['appointmentsTab', 1],
+                'support': ['supportTab', 2],
+                'settings': ['settingsTab', 3]
+            };
+            
+            if (tabMap[tab]) {
+                document.getElementById(tabMap[tab][0]).classList.add('active');
+                document.querySelectorAll('.tab')[tabMap[tab][1]].classList.add('active');
+                
+                // Загрузить данные при переключении
+                if (tab === 'appointments') loadAppointments();
+                if (tab === 'support') loadSupportTickets();
+            }
+        }
+
+        // Загрузка профиля
+        function loadProfile() {
+            currentUser = checkAuth();
+            if (!currentUser) return;
+            
+            document.getElementById('welcomeText').textContent = `Добро пожаловать, ${currentUser.name}!`;
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profilePhone').textContent = currentUser.phone;
+            document.getElementById('profileInn').textContent = currentUser.inn;
+            
+            // Заполнить форму настроек
+            document.getElementById('settingsName').value = currentUser.name;
+            document.getElementById('settingsPhone').value = currentUser.phone;
+        }
+
+        // Загрузка записей
+        async function loadAppointments() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/appointments/user/${currentUser.id}`);
+                const appointments = await response.json();
+                
+                const listEl = document.getElementById('appointmentsList');
+                
+                if (appointments.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📅</div>
+                            <h3>У вас пока нет записей</h3>
+                            <p>Запишитесь к врачу, чтобы увидеть свои записи здесь</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const statusLabels = {
+                    'pending': 'Ожидает',
+                    'confirmed': 'Подтверждена',
+                    'cancelled': 'Отменена',
+                    'completed': 'Завершена'
+                };
+                
+                listEl.innerHTML = appointments.map(apt => `
+                    <div class="appointment-card">
+                        <div class="appointment-info">
+                            <h3>${apt.doctor}</h3>
+                            <div class="appointment-details">
+                                <span>🏥 ${apt.specialtyName}</span>
+                                <span>📅 ${apt.date}</span>
+                                <span>🕐 ${apt.time}</span>
+                            </div>
+                        </div>
+                        <div class="status-badge status-${apt.status}">
+                            ${statusLabels[apt.status] || apt.status}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Load appointments error:', error);
+                document.getElementById('appointmentsList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h3>Ошибка загрузки записей</h3>
+                    </div>
+                `;
+            }
+        }
+
+        // Создать обращение в поддержку
+        async function submitSupportTicket(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+            
+            const subject = document.getElementById('supportSubject').value;
+            const message = document.getElementById('supportMessage').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/support`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        userName: currentUser.name,
+                        subject,
+                        message
+                    })
+                });
+                
+                if (response.ok) {
+                    const successEl = document.getElementById('supportSuccess');
+                    successEl.textContent = 'Обращение отправлено! Мы ответим в ближайшее время.';
+                    successEl.classList.add('show');
+                    
+                    document.getElementById('supportSubject').value = '';
+                    document.getElementById('supportMessage').value = '';
+                    
+                    setTimeout(() => successEl.classList.remove('show'), 5000);
+                    
+                    loadSupportTickets();
+                }
+            } catch (error) {
+                console.error('Submit ticket error:', error);
+                alert('Ошибка отправки обращения');
+            }
+        }
+
+        // Загрузка обращений
+        async function loadSupportTickets() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/support/user/${currentUser.id}`);
+                const tickets = await response.json();
+                
+                const listEl = document.getElementById('supportTicketsList');
+                
+                if (tickets.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💬</div>
+                            <h3>У вас пока нет обращений</h3>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const statusLabels = {
+                    'new': 'Новое',
+                    'answered': 'Отвечено',
+                    'closed': 'Закрыто'
+                };
+                
+                listEl.innerHTML = tickets.map(ticket => `
+                    <div class="ticket-card">
+                        <div class="ticket-header">
+                            <h3>${ticket.subject}</h3>
+                            <div class="status-badge status-${ticket.status === 'answered' ? 'confirmed' : 'pending'}">
+                                ${statusLabels[ticket.status] || ticket.status}
+                            </div>
+                        </div>
+                        <div class="ticket-message">${ticket.message}</div>
+                        ${ticket.adminReply ? `
+                            <div class="ticket-reply">
+                                <div class="ticket-reply-label">✅ Ответ администратора:</div>
+                                <div class="ticket-reply-text">${ticket.adminReply}</div>
+                                <div class="ticket-date">Отвечено: ${new Date(ticket.answeredAt).toLocaleString('ru-RU')}</div>
+                            </div>
+                        ` : ''}
+                        <div class="ticket-date">Создано: ${new Date(ticket.createdAt).toLocaleString('ru-RU')}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Load tickets error:', error);
+            }
+        }
+
+        // Обновить профиль
+        async function updateProfile(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+            
+            const name = document.getElementById('settingsName').value;
+            const phone = document.getElementById('settingsPhone').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/user/${currentUser.inn}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    currentUser = data.user;
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    const successEl = document.getElementById('settingsSuccess');
+                    successEl.textContent = 'Данные успешно обновлены!';
+                    successEl.classList.add('show');
+                    setTimeout(() => successEl.classList.remove('show'), 3000);
+                    
+                    loadProfile();
+                }
+            } catch (error) {
+                console.error('Update profile error:', error);
+                alert('Ошибка обновления данных');
+            }
+        }
+
+        // Изменить пароль
+        async function changePassword(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('Пароли не совпадают');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/user/${currentUser.inn}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPassword })
+                });
+                
+                if (response.ok) {
+                    const successEl = document.getElementById('passwordSuccess');
+                    successEl.textContent = 'Пароль успешно изменён!';
+                    successEl.classList.add('show');
+                    setTimeout(() => successEl.classList.remove('show'), 3000);
+                    
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                }
+            } catch (error) {
+                console.error('Change password error:', error);
+                alert('Ошибка изменения пароля');
+            }
+        }
+
+        // Инициализация
+        window.addEventListener('load', () => {
+            loadProfile();
+            loadAppointments();
+        });
+    </script>
+</body>
+</html>

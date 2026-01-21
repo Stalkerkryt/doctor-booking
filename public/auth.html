@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
+    <title>Вход в систему - Запись к врачу</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            font-family: 'Playfair Display', serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 16px;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            background: #f7fafc;
+            padding: 6px;
+            border-radius: 12px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .form-container {
+            display: none;
+        }
+        
+        .form-container.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 24px;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #2d3748;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        
+        input::placeholder {
+            color: #a0aec0;
+        }
+        
+        .input-hint {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 6px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: #f7fafc;
+            color: #667eea;
+            margin-top: 12px;
+        }
+        
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+        
+        .error-message {
+            padding: 12px 16px;
+            background: #fed7d7;
+            color: #c53030;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease-out;
+        }
+        
+        .success-message {
+            padding: 12px 16px;
+            background: #c6f6d5;
+            color: #22543d;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        
+        .divider span {
+            padding: 0 12px;
+        }
+        
+        .quick-login {
+            text-align: center;
+            font-size: 14px;
+            color: #718096;
+        }
+        
+        .quick-login a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .quick-login a:hover {
+            text-decoration: underline;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 32px;
+            }
+            
+            .card {
+                padding: 28px;
+            }
+            
+            body {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Запись к врачу</h1>
+            <p>Войдите или зарегистрируйтесь</p>
+        </div>
+        
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('login')">Вход</button>
+                <button class="tab" onclick="switchTab('register')">Регистрация</button>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            
+            <!-- ФОРМА ВХОДА -->
+            <div id="loginForm" class="form-container active">
+                <h2>Вход в систему</h2>
+                
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginInn">ИНН</label>
+                        <input 
+                            type="text" 
+                            id="loginInn" 
+                            placeholder="12345678901234" 
+                            maxlength="14"
+                            pattern="\d{14}"
+                            required
+                        >
+                        <div class="input-hint">14 цифр</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">Пароль</label>
+                        <input 
+                            type="password" 
+                            id="loginPassword" 
+                            placeholder="••••••••"
+                            required
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Войти</button>
+                </form>
+                
+                <div class="divider">
+                    <span>или</span>
+                </div>
+                
+                <div class="quick-login">
+                    Нет аккаунта? <a href="#" onclick="switchTab('register'); return false;">Зарегистрироваться</a>
+                </div>
+            </div>
+            
+            <!-- ФОРМА РЕГИСТРАЦИИ -->
+            <div id="registerForm" class="form-container">
+                <h2>Регистрация</h2>
+                
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="registerName">Полное имя</label>
+                        <input 
+                            type="text" 
+                            id="registerName" 
+                            placeholder="Иванов Иван Иванович"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerPhone">Телефон</label>
+                        <input 
+                            type="tel" 
+                            id="registerPhone" 
+                            placeholder="+996555123456"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerInn">ИНН</label>
+                        <input 
+                            type="text" 
+                            id="registerInn" 
+                            placeholder="12345678901234"
+                            maxlength="14"
+                            pattern="\d{14}"
+                            required
+                        >
+                        <div class="input-hint">14 цифр (будет использоваться для входа)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerPassword">Пароль</label>
+                        <input 
+                            type="password" 
+                            id="registerPassword" 
+                            placeholder="••••••••"
+                            minlength="6"
+                            required
+                        >
+                        <div class="input-hint">Минимум 6 символов</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerPasswordConfirm">Подтвердите пароль</label>
+                        <input 
+                            type="password" 
+                            id="registerPasswordConfirm" 
+                            placeholder="••••••••"
+                            minlength="6"
+                            required
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                </form>
+                
+                <div class="divider">
+                    <span>или</span>
+                </div>
+                
+                <div class="quick-login">
+                    Уже есть аккаунт? <a href="#" onclick="switchTab('login'); return false;">Войти</a>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="skipAuth()">
+                Продолжить без регистрации
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // API URL
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3001/api'
+            : '/api';
+
+        // Переключение табов
+        function switchTab(tab) {
+            // Скрыть сообщения
+            hideMessages();
+            
+            // Обновить табы
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+        }
+
+        // Показать ошибку
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+            
+            setTimeout(() => {
+                errorEl.classList.remove('show');
+            }, 5000);
+        }
+
+        // Показать успех
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.classList.add('show');
+            
+            setTimeout(() => {
+                successEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Скрыть все сообщения
+        function hideMessages() {
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('successMessage').classList.remove('show');
+        }
+
+        // Обработка входа
+        async function handleLogin(event) {
+            event.preventDefault();
+            hideMessages();
+            
+            const inn = document.getElementById('loginInn').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Валидация ИНН
+            if (!/^\d{14}$/.test(inn)) {
+                showError('ИНН должен содержать ровно 14 цифр');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ inn, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Сохранить данные пользователя
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showSuccess('Вход выполнен успешно!');
+                    
+                    // Перенаправить в личный кабинет
+                    setTimeout(() => {
+                        window.location.href = '/cabinet.html';
+                    }, 1000);
+                } else {
+                    showError(data.error || 'Ошибка входа');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Ошибка соединения с сервером');
+            }
+        }
+
+        // Обработка регистрации
+        async function handleRegister(event) {
+            event.preventDefault();
+            hideMessages();
+            
+            const name = document.getElementById('registerName').value;
+            const phone = document.getElementById('registerPhone').value;
+            const inn = document.getElementById('registerInn').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+            
+            // Валидация
+            if (!/^\d{14}$/.test(inn)) {
+                showError('ИНН должен содержать ровно 14 цифр');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showError('Пароль должен быть не менее 6 символов');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                showError('Пароли не совпадают');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ inn, password, name, phone })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Сохранить данные пользователя
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showSuccess('Регистрация успешна! Перенаправление...');
+                    
+                    // Перенаправить в личный кабинет
+                    setTimeout(() => {
+                        window.location.href = '/cabinet.html';
+                    }, 1500);
+                } else {
+                    showError(data.error || 'Ошибка регистрации');
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                showError('Ошибка соединения с сервером');
+            }
+        }
+
+        // Пропустить авторизацию
+        function skipAuth() {
+            window.location.href = '/';
+        }
+
+        // Проверка авторизации при загрузке
+        window.addEventListener('load', () => {
+            const user = localStorage.getItem('user');
+            if (user) {
+                // Уже авторизован - перенаправить
+                window.location.href = '/cabinet.html';
+            }
+        });
+        
+        // Автоматическая подстановка только цифр в ИНН
+        document.getElementById('loginInn').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+        
+        document.getElementById('registerInn').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    </script>
+</body>
+</html>
